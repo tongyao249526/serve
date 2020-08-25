@@ -72,7 +72,7 @@ router.get('/',(req,res,next)=>{
 })
 //加入购物车
 router.post('/addCart',(req,res,next)=>{
-    let userId = '100000077'
+    let userId = req.cookies.userId
     let productId = req.body.productId // post请求取参
     User.findOne({userId:userId},(err,userDoc)=>{
         if(err){
@@ -105,7 +105,7 @@ router.post('/addCart',(req,res,next)=>{
                             })
                         }
                     })
-                }else{//购物车里面不存在这个商品
+                }else{//购物车里面不存在这个商品（将商品的基本信息从goods集合中拿出来）
                     Goods.findOne({productId:productId},(err,doc)=>{
                         if(err){
                             res.json({

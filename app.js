@@ -18,8 +18,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 //劫持请求
-app.use(function(req,res,next){
+app.use((req,res,next)=>{
   if(req.cookies.userId){
     next()
   }else{

@@ -5,6 +5,7 @@ var User = require('../models/user');
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
+//登陆
 router.post('/login', function(req, res, next) {
   let param = {
     userName:req.body.userName,
@@ -139,5 +140,75 @@ router.post('/cartEdit',(req,res,next)=>{
     }
   })
 })
-
+//地址列表查询
+router.get('/address',(req,res,next)=>{
+  User.findOne({userId:req.cookies.userId},(err,doc)=>{
+    if(err){
+      res.json({
+        status:'1',
+        msg:err.message,
+        result:''
+      })
+    }else{
+      if(doc){
+        res.json({
+          status:'0',
+          msg:'',
+          result: doc.addressList
+        })
+      }
+    }
+  })
+})
+// 添加一个新的地址
+router.post('/addAddress',(req,res,next)=>{
+  let param = req.body
+  User.findOne({userId:req.cookies.userId},(err,doc)=>{
+    if(err){
+      res.json({
+        status:'1',
+        msg:err.message,
+        result:''
+      })
+    }else{
+      if(doc){
+        doc.addressList.push(param)
+        doc.save((err2,doc2)=>{
+          if(err2){
+              res.json({
+                  status:'1',
+                  msg:err2.message
+              })
+          }else{
+              res.json({
+                  status:'0',
+                  msg:'',
+                  result:'success'
+              })
+          }
+      })
+      }
+    }
+  })
+})
+//删除一个地址
+router.post('/deleteAddress',(req,res,next)=>{
+  User.update({userId:req.cookies.userId},{$pull:{'addressList':{'addressId':req.body.addressId}}},(err,doc)=>{
+    if(err){
+      res.json({
+        status:'1',
+        msg:err.message,
+        result:''
+      })
+    }else{
+      if(doc){
+        res.json({
+          status:'0',
+          msg:'',
+          result: 'success'
+        })
+      }
+    }
+  })
+})
 module.exports = router;
