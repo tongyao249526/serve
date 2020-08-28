@@ -140,6 +140,60 @@ router.post('/cartEdit',(req,res,next)=>{
     }
   })
 })
+//购物车全选
+router.post('/checkedAll',(req,res,next)=>{
+  let checkedAll = req.body.checkedAll?'1':'0'
+  User.findOne({userId:req.cookies.userId},(err,doc)=>{
+    if(err){
+      res.json({
+        status:'1',
+        msg:err.message,
+        result:''
+      })
+    }else{
+      if(doc){
+        doc.cartList.forEach((item)=>{
+          item.checked = checkedAll
+        })
+        doc.save((err1,doc1)=>{
+          if(err1){
+            res.json({
+              status:'1',
+              msg:err.message,
+              result:''
+            })
+          }else{
+            res.json({
+              status:'0',
+              msg:'',
+              result: 'success'
+            })
+          }
+        })
+      }
+    }
+  })
+})
+//购物车单选
+router.post('/checkedOne',(req,res,next)=>{
+  User.update({userId:req.cookies.userId,'cartList.productId':req.body.productId},{'cartList.$.checked':'0'},(err,doc)=>{
+    if(err){
+      res.json({
+        status:'1',
+        msg:err.message,
+        result:''
+      })
+    }else{
+      if(doc){
+        res.json({
+          status:'0',
+          msg:'',
+          result: 'success'
+        })
+      }
+    }
+  })
+})
 //地址列表查询
 router.get('/address',(req,res,next)=>{
   User.findOne({userId:req.cookies.userId},(err,doc)=>{
@@ -159,6 +213,52 @@ router.get('/address',(req,res,next)=>{
       }
     }
   })
+})
+// 设置默认地址接口
+router.post('/setDefault',(req,res,next)=>{
+  if(!req.body.addressId){
+    res.json({
+      status:'1003',
+      msg:'addressId is null',
+      result:''
+    })
+  }else{
+    User.findOne({userId:req.cookies.userId},(err,doc)=>{
+      if(err){
+        res.json({
+          status:'1',
+          msg:err.message,
+          result:''
+        })
+      }else{
+        if(doc){
+          let addressList = doc.addressList
+          addressList.forEach((item)=>{
+            if(req.body.addressId === item.addressId){
+              item.isDefault = true
+            }else{
+              item.isDefault = false
+            }
+          })
+          doc.save((err,doc)=>{
+            if(err){
+              res.json({
+                status:'1',
+                msg:err.message,
+                result:''
+              })
+            }else{
+              res.json({
+                status:'0',
+                msg:'',
+                result:'success'
+              })
+            }
+          })
+        }
+      }
+    })
+  }
 })
 // 添加一个新的地址
 router.post('/addAddress',(req,res,next)=>{
