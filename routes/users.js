@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var User = require('../models/user');
+const goods = require('../models/goods');
+const { LoopDetected } = require('http-errors');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
@@ -308,6 +310,68 @@ router.post('/deleteAddress',(req,res,next)=>{
           result: 'success'
         })
       }
+    }
+  })
+})
+//支付
+router.post('/payMent',(req,res,next)=>{
+  User.findOne({userId:req.cookies.userId},(err,doc)=>{
+    if(err){
+      res.json({
+        status:'1',
+        msg:err.message,
+        result:''
+      })
+    }else{
+      //获取当前地址信息
+      let address = ''
+      doc.addressList.forEach((item)=>{
+        if(req.body.addressId === item.addressId){
+          address = item
+        }
+      })  
+      //获取购物车的购买商品
+      let goodsList = []
+      doc.cartList.filter((item)=>{
+        if(item.checkded === '1'){
+          goodsList.push(item)
+        }
+      })
+      let platform = '622'
+      let r1 = Math.floor(Math.random()*10)
+      let r2 = Math.floor(Math.random()*10)
+      const d = new Date();
+      let sysDate = `${d.getFullYear()}${d.getMonth()}${d.getDate()-1}${d.getHours()}${d.getMinutes()}${d.getSeconds()}`
+      let createDate =`${d.getFullYear()}${d.getMonth()}${d.getDate()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
+      let orderId = platform+r1+sysDate+r2
+      let order = {
+        orderId: orderId,
+        orderTotal:req.body.orderTotal,
+        addressInfo: address,
+        goodsList: goodsList,
+        orderStatus:'1',
+        createDate:createDate
+      }
+      doc.orderList.push(order)
+      doc.save((err1,doc1)=>{
+        if(err1){
+          res.json({
+            status:'1',
+            msg:err1.message,
+            result:''
+          })
+        }else{
+          res.json({
+            status:'0',
+            msg:'',
+            result:{
+              orderId: order.orderId,
+              orderTotal: order.orderTotal,
+            }
+          })
+        }
+      })
+
     }
   })
 })
