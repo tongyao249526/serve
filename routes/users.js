@@ -178,23 +178,60 @@ router.post('/checkedAll',(req,res,next)=>{
 })
 //购物车单选
 router.post('/checkedOne',(req,res,next)=>{
-  User.update({userId:req.cookies.userId,'cartList.productId':req.body.productId},{'cartList.$.checked':'0'},(err,doc)=>{
+User.findOne({userId:req.cookies.userId},(err,doc)=>{
     if(err){
-      res.json({
-        status:'1',
-        msg:err.message,
-        result:''
-      })
-    }else{
-      if(doc){
         res.json({
-          status:'0',
-          msg:'',
-          result: 'success'
+          status:'1',
+          msg:err.message,
+          result:''
         })
-      }
+    }else{
+        if(doc){
+            for(let i=0;i<doc.cartList.length;i++){
+                if(req.body.productId === doc.cartList[i].productId){
+                    if(doc.cartList[i].checked === '0'){
+                        doc.cartList[i].checked = '1'
+                    }else if(doc.cartList[i].checked === '1'){
+                        doc.cartList[i].checked = '0'
+                    }
+                }
+            }
+            console.log('doc',doc.cartList)
+            doc.save((err,doc)=>{
+                if(err){
+                  res.json({
+                    status:'1',
+                    msg:err.message,
+                    result:''
+                  })
+                }else{
+                  res.json({
+                    status:'0',
+                    msg:'',
+                    result:'success'
+                  })
+                }
+            })
+        }
     }
-  })
+})
+//   User.update({userId:req.cookies.userId,'cartList.productId':req.body.productId},{'cartList.$.checked':'0'},(err,doc)=>{
+//     if(err){
+//       res.json({
+//         status:'1',
+//         msg:err.message,
+//         result:''
+//       })
+//     }else{
+//       if(doc){
+//         res.json({
+//           status:'0',
+//           msg:'',
+//           result: 'success'
+//         })
+//       }
+//     }
+//   })
 })
 //地址列表查询
 router.get('/address',(req,res,next)=>{
